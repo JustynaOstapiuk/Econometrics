@@ -1,0 +1,95 @@
+library(lmtest)
+mLin = function(x,y){
+  wyniki=data.frame(Model=c("Liniowy","Potęgowy","Wykładniczy","Typu S","Hiperboliczny","Podwój. hiper.","Pierwiastkowy","Logarytmiczny", "Kwadratowy"),Formula=NA,Rozk.Normalny=NA,Homosked.=NA,Niezal.=NA,Reset=NA,R.kwadrat=NA)
+  #Liniowy
+  fm=lm(y~x)
+  wyniki[1,2]="y ~ x"
+  wyniki[1,3]=shapiro.test(fm$residuals)$p.value
+  wyniki[1,4]=gqtest(fm,order.by = fm$fitted.values)$p.value
+  wyniki[1,5]=dwtest(fm,order.by = fm$fitted.values)$p.value 
+  wyniki[1,6]=resettest(fm)$p.value
+  wyniki[1,7]=summary(fm)$r.squared
+  #Potęgowy
+  if(min(x>0 & min(y)>0)){
+    fm=lm(log(y)~log(x))
+    wyniki[2,2]="log(y)~log(x)"
+    wyniki[2,3]=shapiro.test(fm$residuals)$p.value
+    wyniki[2,4]=gqtest(fm,order.by = fm$fitted.values)$p.value
+    wyniki[2,5]=dwtest(fm,order.by = fm$fitted.values)$p.value
+    wyniki[2,6]=resettest(fm)$p.value
+    wyniki[2,7]=summary(fm)$r.squared
+  }
+  #Wykładniczy
+  if(min(y)>0){
+    fm=lm(log(y)~x)
+    wyniki[3,2]="log(y)~x"
+    wyniki[3,3]=shapiro.test(fm$residuals)$p.value
+    wyniki[3,4]=gqtest(fm,order.by = fm$fitted.values)$p.value
+    wyniki[3,5]=dwtest(fm,order.by = fm$fitted.values)$p.value
+    wyniki[3,6]=resettest(fm)$p.value
+    wyniki[3,7]=summary(fm)$r.squared
+  }
+  #Typu S
+  if(min(x!=0) & min(y)>0){
+    fm=lm(log(y)~I(1/x))
+    wyniki[4,2]="log(y)~I(1/x)"
+    wyniki[4,3]=shapiro.test(fm$residuals)$p.value
+    wyniki[4,4]=gqtest(fm,order.by = fm$fitted.values)$p.value
+    wyniki[4,5]=dwtest(fm,order.by = fm$fitted.values)$p.value
+    wyniki[4,6]=resettest(fm)$p.value
+    wyniki[4,7]=summary(fm)$r.squared
+  }
+  #Hiperboliczny
+  if(min(y!=0)>0){
+    fm=lm(I(1/y)~x)
+    wyniki[5,2]="I(1/y)~x"
+    wyniki[5,3]=shapiro.test(fm$residuals)$p.value
+    wyniki[5,4]=gqtest(fm,order.by = fm$fitted.values)$p.value
+    wyniki[5,5]=dwtest(fm,order.by = fm$fitted.values)$p.value
+    wyniki[5,6]=resettest(fm)$p.value
+    wyniki[5,7]=summary(fm)$r.squared
+  }
+  #Podwójnie hiperboliczny
+  if(min(y!=0)>0 & min(x!=0)>0){
+    fm=lm(I(1/y)~I(1/x))
+    wyniki[6,2]="I(1/y)~I(1/x)"
+    wyniki[6,3]=shapiro.test(fm$residuals)$p.value
+    wyniki[6,4]=gqtest(fm,order.by = fm$fitted.values)$p.value
+    wyniki[6,5]=dwtest(fm,order.by = fm$fitted.values)$p.value
+    wyniki[6,6]=resettest(fm)$p.value
+    wyniki[6,7]=summary(fm)$r.squared
+  }
+  #Pierwiastkowy
+  if(min(x)>0){
+    fm=lm(y~sqrt(x))
+    wyniki[7,2]="y~sqrt(x)"
+    wyniki[7,3]=shapiro.test(fm$residuals)$p.value
+    wyniki[7,4]=gqtest(fm,order.by = fm$fitted.values)$p.value
+    wyniki[7,5]=dwtest(fm,order.by = fm$fitted.values)$p.value
+    wyniki[7,6]=resettest(fm)$p.value
+    wyniki[7,7]=summary(fm)$r.squared
+  }
+  #Logarytmiczny
+  if(min(x)>0){
+    fm=lm(y~log(x))
+    wyniki[8,2]="y~log(x)"
+    wyniki[8,3]=shapiro.test(fm$residuals)$p.value
+    wyniki[8,4]=gqtest(fm,order.by = fm$fitted.values)$p.value
+    wyniki[8,5]=dwtest(fm,order.by = fm$fitted.values)$p.value
+    wyniki[8,6]=resettest(fm)$p.value
+    wyniki[8,7]=summary(fm)$r.squared
+  }
+  #Logarytmiczny
+  if(min(x)>0){
+    fm=lm(y~x+I(x^2))
+    wyniki[9,2]="y~x+x^2"
+    wyniki[9,3]=shapiro.test(fm$residuals)$p.value
+    wyniki[9,4]=gqtest(fm,order.by = fm$fitted.values)$p.value
+    wyniki[9,5]=dwtest(fm,order.by = fm$fitted.values)$p.value
+    wyniki[9,6]=resettest(fm)$p.value
+    wyniki[9,7]=summary(fm)$r.squared
+  }
+  
+  wyniki
+}
+mLin(dane$x, dane$y)
