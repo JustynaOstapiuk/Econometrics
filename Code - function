@@ -79,7 +79,7 @@ mLin = function(x,y){
     wyniki[8,6]=resettest(fm)$p.value
     wyniki[8,7]=summary(fm)$r.squared
   }
-  #Logarytmiczny
+  #Kwadratowy
   if(min(x)>0){
     fm=lm(y~x+I(x^2))
     wyniki[9,2]="y~x+x^2"
