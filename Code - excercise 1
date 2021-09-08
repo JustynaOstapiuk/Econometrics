@@ -1,0 +1,94 @@
+# populacja: pewne przedsiebiorstwo  
+# x - produkcja (w tys. szt.)
+# y - przychody (w tys. zł)
+x <- c(2,4,5,10,12,14)
+y <- c(5,6,9,13,15,16)
+
+# Wykres rozrzutu - sprawdzamy rodzaj zaleznosci korelacyjnej
+plot(x,y, main = "Wykres rozrzutu - zaleznosc korelacyjna",
+     xlab = "x - produkcja",
+     ylab = "y - przychody")
+# dopasowujemy linie regresji 
+abline(lm(y~x), col = "red")
+# Widzimy na wykresie, ze wystepuje korelacja dodatnia 
+
+# sprawdzamy rozklad normalny 
+# H0: rozklad jest rozkladem normalnym 
+# H1: brak rozkladu normalnego 
+shapiro.test(x) #  p-value = 0.5513
+shapiro.test(y) # p-value = 0.4099
+# w obydwu przypadkach p-value > poziomu istotnosci 0.05 -> brak podstaw do odrzucenia H0 -> oba rozklady sa rozkladami normalnymi 
+
+# sprawdzamy korelacje pomiedzy x i y 
+# H0:ρ=0 (brak korelacji między x i y)
+# H1:ρ!=0
+
+cor.test(y,x, method = "pearson")
+# wspolczynnik korelacji Pearsona wynosi 0.9880158 
+# wynik ten potwierdza wystepowanie silnej korelacji dodatniej 
+# wartosc p-value = 0.0002146 < 0.05 -> sa podstawy do odrzucenia H0 i przyjecia H1 -> istotna korelacja pomiedzy x i y 
+
+# Wniosek: pomiędzy y a x wystepuje istotna silna korelacja dodatnia. Oznacza to,
+# ze im wieksza produkcja, tym wieksze przychody.  
+
+# tworzymy model regresji liniowej 
+
+# zmienna objaśniana zależna (y) = przychody
+# zmienna objaśniająca niezależna (X) = produkcja
+# model = y~x
+model = lm(y~x)
+model # postać liniowa funkcji regresji y(x) = 3.1797 + 0.9558x + epsilon
+# przychody = 3.1797 + 0.9558produkcja + reszty
+# reszty modelu są różnicami pomiędzy wartościami empirycznymi a teoretycznymi zmiennej objaśnianej modelu
+# wzrost produkcji o 1 w tys. szt. spowoduje wzrost przychodow o 0.9558 w tys. zl
+
+summary(model)
+# p-wartości < 0.05 wskazują na istotność statystyczną zmiennych 
+
+# wspolczynnik determinacji
+# Multiple R-squared: 0.9762 - wartość R kwadrat (wspolczynnik determinacji) 
+# udział zmienności teoretycznej modelu w jego zmienności empirycznej stanowi 97.62%.
+# model wyjaśnia 97.62% zmienności zmiennej objaśnianej,
+# model zostal dobrze dobrany i bardzo dobrze opisuje rzeczywistosc 
+# im wartość bliża 1 tym lepiej model opisuje rzeczywistość
+# Współczynnik determinacji określa udział zmienności teoretycznej modelu w jego zmienności empirycznej. 
+# Zmienność zmiennej objaśnianej jest wyjaśniona przez model w stopniu równym R2 = 0.9762. 
+# Zmienność zmiennej objaśnianej w 97.62% została wyjaśniona przez zmienność zmiennych objaśniających
+
+# odchylenie standardowe skladnika losowego 
+# Residual standard error:  0.807 - niska wartosc -> model dobrze opisuje rzeczywistość 
+# przeciętne odchylenie wartości empirycznych przychodow od wartości teoretycznych wynikających ze zbudowanego modelu wynosi 0,807 tys. zl
+
+# wariancja resztowa 
+0.807^2 # 0.651249
+
+
+# wspolczynnik zmiennosci resztowej 
+(0.807/mean(y))*100 # 7.565625
+# Współczynnik  zmienności  resztowej  określa,  jaką  cześć  średniej  arytmetycznej  badanej  zmiennej  stanowi 
+# odchylenie standardowe składnika resztowego.
+# 7.565625% sredniej arytmetycznej badanej zmiennej y stanowi odchylenie standardowe skaldnika resztowego 
+# 7.565625 % poziomu przychodow stanowia wahania losowe 
+
+# statystyka F 
+# H0: Beta1 = 0 - zmienna objasniajaca x nie wywiera istotnego wplywu na 
+# zmienna objasniana y ; brak zaleznosci opisywanej modelem regresji liniowej
+# H1: Beta1 != 0 - zmienna objasniajaca x wywiera istotny wplyw na 
+# zmienna objasniana y 
+
+# F-statistic: 163.9 on 1 and 4 DF,  p-value: 0.0002146
+
+# F krytyczne
+qf(0.95, 1, 4) #  7.708647
+# 163.9 > 7.708647 -> sa podstawy do odrzucenia H0 i przyjecia H1 -> zmienna objasniajaca x wywiera istotny wplyw na 
+# zmienna objasniana y, w modelu zachodzi zaleznosc liniowa 
+
+# wspolczynnik zbieznosci = 1-R^2
+1- 0.9762 # 0.0238
+# Współczynnik zbieżności określa udział zmienności resztowej modelu w jego zmienności empirycznej. 
+# Zmienność zmiennej objaśnianej nie jest wyjaśniona przez model w stopniu równym = 0.0238
+# Zmienność resztowa (niewyjaśniona przez model) stanowi 2.387% zmienności empirycznej 
+# 2.38% zmienności zmiennej objaśnianej nie jest wyjaśnione przez model. 
+
+
+# Podsumowujac, model zostal poprawnie dopasowany i moze posluzyc do dalszych predykcji. 
