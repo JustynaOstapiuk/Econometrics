@@ -1,0 +1,345 @@
+# wprowadzamy dane w postaci wektorow 
+y <- c(19,30,38,29,39,15,32,18,25,20,32,36,17,26,5,30,37,21,18,11,18)
+x1 <- c(21.99,30.4,35.63,37.14,41.27,18.78,29.92,22.42,21.14,16.21,31.94,43.25,15.27,30.44,5.74,38.54,38.95,26.09,16.9,10.69,18.35)
+x2 <- c(29.49,34.93,25.92,28.49,30.05,32.52,19.08,35.5,24.26,37.27,29.77,16.81,35.57,41.96,40.73,31.91,39.99,35.56,35.45,42.12,31.25)
+# sprawdzamy czy wektory maja odpowiednia dlugosc 
+length(y)
+length(x1)
+length(x2)
+
+# 1.a) opis podstawowych statystyk zmiennej Y: średnią arytmetyczną, medianę, dominantę oraz 1-, 2- i 3-ci kwartyl,
+# srednia arytmetyczna
+mean(y) # 24.57143
+
+# mediana
+median(y) # 25
+
+# dominanta
+install.packages("RVAideMemoire")
+library(RVAideMemoire)
+mod(y) # 18
+
+# 1-, 2- i 3-ci kwartyl
+summary(y) 
+# 1-kwartyl (Q1): 18.00 , 2-kwartyl (Q2): 25.00, 3-ci kwartyl (Q3): 32.00
+
+# Pierwszy kwartyl (Q1) – dzieli obserwacje w stosunku 25%:75%, co oznacza, że 25% obserwacji (wartosci y) jest niższa bądź równa wartości I kwartyla - 18.00, 
+# a 75% obserwacji (wartosci y) jest równa bądź większa niż wartość I kwartyla - 18.00.
+
+# Drugi kwartyl (Q2) - inaczej mówiąc mediana, która dzieli zbiór na dwie równe części. Połowa jednostek zbiorowości (wartosci y) ma wartości 
+# zmiennej równe lub większe od mediany - 25.00
+
+# Trzeci kwartyl (Q3) – dzieli obserwację w stosunku 75% - 25%, co oznacza, że 75% obserwacji (wartosci y) jest niższa bądź równa wartości III kwartyla - 32.00,
+# a 25% obserwacji (wartosci y) jest równa bądź większa niż wartość III kwartyla - 32.00.
+
+# 1.b) kształt i typ rozkładu zmiennej Y,
+hist(y, main="Wartosci y", ylab="Czestosc wystepowania w danym przedziale", xlab='Wartosci y')
+plot(density(y), main = "Rozklad wartosci y")
+
+# Czy wiemy z jakiego rozkladu pochodzl te dane? Czy na poziomie istotnolci 0.05 mozemy stwierdzic, 
+# ze dane pochodza z rozkladu normalnego ?
+# H0: rozklad jest normalny
+# H1: rozklad nie jest rozkladem normalnym 
+shapiro.test(y)$p.value
+# 0.492448 -> p-value wieksze od poziomu istotnosci 0.05 -> brak podstaw do odrzucenia H0 -> rozklad jest rozkladem normalnym 
+
+# ksztalt : skosnosc, kurtoza 
+install.packages("moments")
+library(moments)
+skewness(y)
+# -0.1473596 wynik ponizej 0 wskazuje na asymetrie lewostronna, gdzie (średnia<Me<D)
+# Rozklady lewoskośne (z  lewej  ukośne,  z  prawej  strome) charakteryzuja sie tym, ze przedział  klasowy 
+# zawierający największą liczbę obserwacji jest przesunięty w prawo, czyli stosunkowo niewiele 
+# jednostek  posiada  niskie  wartości  cechy,  natomiast  licznie  występują  te  o  wysokich wartościach.
+# Asymetria lewostronna mówi nam, ze wieksza czesc danych dotyczacych wartosci y przyjmuje wartosci powyzej przecietnej. 
+kurtosis(y)
+# 2.16239 wynik ponizej 3 - rozklad platokurtyczny – kurtoza jest ujemna, wartości cechy mniej skoncentrowane (bardziej spłaszczone) niż przy rozkładzie normalnym.
+# Kurtoza jest miarą występowania wartości odstających. Podobnie jak w przypadku skośności, wartość 0 kurtozy wskazuje na kształt zbliżony do normalnego.
+
+# Zarowno wynik skosnosci jak i kurtozy sa bardzo zblizone do wartosci rozkladu normalnego: skosnosc = 0 i kurtoza = 3
+# Z racji, iz test shapiro wilka potwierdzil normalnosc rozkladu dla wartosci y, wartosci skosnosci i kurtozy nie odbiegaja
+# znacznie od wartosci dla rozkladu normalnego. 
+
+# 1.c) dystrybuantę szeregu punktowego Y oraz histogram,
+szereg <- table(y) # za pomoca table grupujemy dane do tabeli 
+szereg
+ecdf(szereg) # ecdf tworzy dystrybuante empiryczna
+ecdf(szereg)(names(table(szereg)))
+data.frame(wartosci = names(table(szereg)), czestosc_skokowa = ecdf(szereg)(names(table(szereg))))
+plot(ecdf(szereg), main = "Dystrybuanta empiryczna dla szeregu punktowego")
+hist(y, main="Histogram dla wartosci y", ylab="Czestosc wystepowania w danym przedziale", xlab='Wartosci y')
+
+# 2. konstrukcję modelu Y=f(X1,X2), czyli opisującego zależności między cechami: Y, X1, X2 
+# za pomocą podstawowych miar jakości dopasowania modelu do danych empirycznych (np. R2) oraz wybór 
+# ostatecznej postaci modelu po ewentualnej redukcji tej zmiennej Xk (k=1,2), która w najmniejszym 
+# stopniu wpływa na wyjaśnienie Y i/lub nie jest istotna,
+
+# sprawdzamy rozklad normalny zmiennych y, x1, x2
+# H0: rozklad jest rozkladem normalnym 
+# H1: brak rozkladu normalnego 
+shapiro.test(y) #  p-value = 0.4924
+shapiro.test(x1) # p-value = 0.6158
+shapiro.test(x2) # p-value = 0.3384
+# wszystkie zmienne maja wartosc p-value > poziomu istotnosci 0.05 -> brak podstaw do odrzucenia H0 
+# -> wszystkie rozklady sa rozkladami normalnymi 
+
+# sprawdzamy korelacje pomiedzy x i y - wspolczynnik korelacji Pearsona
+# H0:ρ=0 (brak korelacji między x i y)
+# H1:ρ!=0
+
+cor.test(y,x1, method = "pearson")
+# wspolczynnik korelacji Pearsona wynosi 0.938794 
+# wynik ten potwierdza wystepowanie bardzo silnej korelacji dodatniej 
+# wartosc p-value = 3.073e-10 < 0.05 -> sa podstawy do odrzucenia H0 i przyjecia H1 -> istotna korelacja pomiedzy y i x1 
+plot(x1,y, main = "Wykres rozrzutu - zaleznosc korelacyjna",
+     xlab = "x",
+     ylab = "y")
+# dopasowujemy linie regresji 
+abline(lm(y~x1), col = "red")
+
+cor.test(y,x2, method = "pearson")
+# wspolczynnik korelacji Pearsona wynosi -0.5315183 
+# wynik ten wskazuje na wystepowanie umiarkowanej korelacji ujemnej 
+# wartosc p-value = 0.01315 < 0.05 -> sa podstawy do odrzucenia H0 i przyjecia H1 -> istotna korelacja pomiedzy y i x2
+
+plot(x2,y, main = "Wykres rozrzutu - zaleznosc korelacyjna",
+     xlab = "x",
+     ylab = "y")
+# dopasowujemy linie regresji 
+abline(lm(y~x2), col = "red")
+
+install.packages("corrplot")
+library(corrplot)
+
+x<-cbind(x1,x2)
+xkor<-cor(x)
+corrplot(xkor)
+cor.test(x1,x2, method = "pearson")
+# pomiedzy zmiennymi x1 i x2 wystepuje slaba korelacja ujemna 
+# to bardzo dobrze, gdyz pomiedzy tymi zmiennymi powinna byc slaba korelacja
+
+# zmienna objaśniana zależna (y)
+# zmienne objaśniające niezależne (x1, x2)
+
+# model liniowy 
+model = lm(y~x1+x2)
+model
+# postać liniowa funkcji regresji y = 8.2538 + 0.7889x1 -0.1356x2 + epsilon  
+# epsilon: reszty modelu są różnicami pomiędzy wartościami empirycznymi a teoretycznymi zmiennej objaśnianej modelu
+summary(model)
+# p-wartości < 0.05 wskazują na istotność statystyczną zmiennych 
+
+# wspolczynnik determinacji
+# Multiple R-squared: 0.8888 - wartość R kwadrat
+# udział zmienności teoretycznej modelu w jego zmienności empirycznej stanowi 88.88%.
+# model wyjaśnia 88.88% zmienności zmiennej objaśnianej,
+# model zostal dobrze dobrany i bardzo dobrze opisuje rzeczywistosc 
+# im wartość bliża 1 tym lepiej model opisuje rzeczywistość
+# Współczynnik determinacji określa udział zmienności teoretycznej modelu w jego zmienności empirycznej. 
+# Zmienność zmiennej objaśnianej jest wyjaśniona przez model w stopniu równym R2 = 0.8888. 
+# Zmienność zmiennej objaśnianej w 88.88% została wyjaśniona przez zmienność zmiennych objaśniających
+
+# p-wartości zmiennych 
+# p-value zmiennej x1: 1.03e-08 < 0.05 wskazuje na istotność statystyczna zmiennej x1
+# p-value zmiennej x2: 0.285 > 0.05 wskazuje na brak istotności statystycznej zmiennej x2
+
+# odchylenie standardowe skladnika losowego 
+# Residual standard error:  3.311 - niska wartosc -> model dobrze opisuje rzeczywistość 
+# przeciętne odchylenie wartości empirycznych y od wartości teoretycznych wynikających 
+# ze zbudowanego modelu wynosi 3.311
+
+# statystyka F 
+# H0: Beta1 = 0 - zmienna objasniajaca x nie wywiera istotnego wplywu na 
+# zmienna objasniana y ; brak zaleznosci opisywanej modelem regresji liniowej
+# H1: Beta1 != 0 - zmienna objasniajaca x wywiera istotny wplyw na 
+# zmienna objasniana y 
+
+# F-statistic: 71.97 on 2 and 18 DF,  p-value: 2.59e-09
+
+# F krytyczne
+qf(0.95, 2, 18) #  3.554557
+# 71.97 > 3.554557 -> sa podstawy do odrzucenia H0 i przyjecia H1 -> zmienna objasniajaca x wywiera istotny wplyw na 
+# zmienna objasniana y, w modelu zachodzi zaleznosc liniowa 
+
+# wspolczynnik zbieznosci = 1-R^2
+1-0.8888 # 0.1112
+# Współczynnik zbieżności określa udział zmienności resztowej modelu w jego zmienności empirycznej. 
+# Zmienność zmiennej objaśnianej nie jest wyjaśniona przez model w stopniu równym = 0.1112
+# Zmienność resztowa (niewyjaśniona przez model) stanowi 11.12% zmienności empirycznej 
+# 11.12% zmienności zmiennej objaśnianej nie jest wyjaśnione przez model. 
+
+# z racji, iż zmienna x2 nie jest itotna statystycznie tworzymy nowy model liniowy (redukcja zmiennej x2)
+model = lm(y~x1)
+summary(model)
+# Wspolczynnik determinacji R2 = 0.8813
+
+# Z racji iz, zmienna x2 jest slabo skorelowana ze zminna y oraz nie wywiera na nia istotnego wplywu od tej pory usuniemy ja z modeli 
+
+# model wykladniczy 
+model_2 = lm(log(y)~x1)
+summary(model_2)
+
+a0<-exp(model_2$coefficients[1])
+a0
+
+a1<-exp(model_2$coefficients[2])
+a1
+
+# y = 10.8533*1.039115^x1
+
+# wspolczynnik determinacji
+# Multiple R-squared: 0.8023 - wartość R kwadrat
+# model wyjaśnia 80.23% zmienności zmiennej objaśnianej,
+# model zostal dobrze dobrany i bardzo dobrze opisuje rzeczywistosc, choc gorzej od modelu liniowego
+
+# p-value zmiennej x1: 4.09e-08 < 0.05 wskazuje na istotność statystyczna zmiennej x1
+
+# odchylenie standardowe skladnika losowego 
+# Residual standard error: 0.2228  - niska wartosc -> model dobrze opisuje rzeczywistość 
+# przeciętne odchylenie wartości empirycznych y od wartości teoretycznych wynikających 
+# ze zbudowanego modelu wynosi 0.2228 
+
+# statystyka F 
+# H0: Beta1 = 0 - zmienna objasniajaca x nie wywiera istotnego wplywu na 
+# zmienna objasniana y 
+# H1: Beta1 != 0 - zmienna objasniajaca x wywiera istotny wplyw na 
+# zmienna objasniana y 
+
+# F-statistic: 77.11 on 1 and 19 DF,  p-value: 4.089e-08
+
+# F krytyczne
+qf(0.95, 1, 19) #  4.38075
+# 77.11 > 4.38075 -> sa podstawy do odrzucenia H0 i przyjecia H1 -> zmienna objasniajaca x wywiera istotny wplyw na 
+# zmienna objasniana y
+
+# wspolczynnik zbieznosci = 1-R^2
+1-0.8023 # 0.1977
+# 19.77% zmienności zmiennej objaśnianej nie jest wyjaśnione przez model. 
+
+# model potegowy 
+model_3 = lm(log(y)~log(x1))
+summary(model_3)
+
+a0<-exp(model_3$coefficients[1])
+a0
+# y = 1.164685*x1^0.93358
+
+# wspolczynnik determinacji
+# Multiple R-squared: 0.9203 - wartość R kwadrat
+# model wyjaśnia 92.03% zmienności zmiennej objaśnianej,
+# model zostal dobrze dobrany i bardzo dobrze opisuje rzeczywistosc, najlepszy ze wszystkich modeli 
+
+# p-value zmiennej x1: 6.83e-12 < 0.05 wskazuje na istotność statystyczna zmiennej x1
+
+# odchylenie standardowe skladnika losowego 
+# Residual standard error: 0.1414  - niska wartosc -> model dobrze opisuje rzeczywistość 
+# przeciętne odchylenie wartości empirycznych y od wartości teoretycznych wynikających 
+# ze zbudowanego modelu wynosi 0.1414
+
+# statystyka F 
+# H0: Beta1 = 0 - zmienna objasniajaca x nie wywiera istotnego wplywu na 
+# zmienna objasniana y 
+# H1: Beta1 != 0 - zmienna objasniajaca x wywiera istotny wplyw na 
+# zmienna objasniana y 
+
+# F-statistic: 219.5 on 1 and 19 DF,  p-value: 6.833e-12
+
+# F krytyczne
+qf(0.95, 1, 19) #  4.38075
+# 219.5 > 4.38075 -> sa podstawy do odrzucenia H0 i przyjecia H1 -> zmienna objasniajaca x wywiera istotny wplyw na 
+# zmienna objasniana y
+
+# wspolczynnik zbieznosci = 1-R^2
+1-0.9203 # 0.0797
+# 7.97% zmienności zmiennej objaśnianej nie jest wyjaśnione przez model. 
+
+# wariancja resztowa 
+0.1414^2 # 0.01999396
+
+# Ostatnicznie wybieramy model potegowy jako najlepiej dopasowany.
+
+# 3. a) ponownie oszacowane parametry modelu ostatecznie wykonanego/wybranego w punkcie 2. na 
+# podstawie obserwacji od t1 do tn-2,
+y <- c(19,30,38,29,39,15,32,18,25,20,32,36,17,26,5,30,37,21,18)
+x1 <- c(21.99,30.4,35.63,37.14,41.27,18.78,29.92,22.42,21.14,16.21,31.94,43.25,15.27,30.44,5.74,38.54,38.95,26.09,16.9)
+length(y)
+length(x1)
+
+model_ostateczny = lm(log(y)~log(x1))
+summary(model_ostateczny)
+
+a0<-exp(model_ostateczny$coefficients[1])
+a0
+
+# y = 1.130856*x1^0.94183
+
+# wspolczynnik determinacji
+# Multiple R-squared: 0.9094 - wartość R kwadrat
+# model wyjaśnia 90.94% zmienności zmiennej objaśnianej,
+
+# p-value zmiennej x1: 2.71e-10 < 0.05 wskazuje na istotność statystyczna zmiennej x1
+
+# odchylenie standardowe skladnika losowego 
+# Residual standard error: 0.1491  - niska wartosc -> model dobrze opisuje rzeczywistość 
+# przeciętne odchylenie wartości empirycznych y od wartości teoretycznych wynikających 
+# ze zbudowanego modelu wynosi 0.1491
+
+# statystyka F 
+# H0: Beta1 = 0 - zmienna objasniajaca x nie wywiera istotnego wplywu na 
+# zmienna objasniana y 
+# H1: Beta1 != 0 - zmienna objasniajaca x wywiera istotny wplyw na 
+# zmienna objasniana y 
+
+# F-statistic: 170.7 on 1 and 17 DF,  p-value: 2.714e-10
+
+# F krytyczne
+qf(0.95, 1, 17) # 4.451322
+# 170.7 >  4.451322 -> sa podstawy do odrzucenia H0 i przyjecia H1 -> zmienna objasniajaca x wywiera istotny wplyw na 
+# zmienna objasniana y
+
+# wspolczynnik zbieznosci = 1-R^2
+1-0.9094 # 0.0906
+# 9.06% zmienności zmiennej objaśnianej nie jest wyjaśnione przez model. 
+
+# 3. b) wyznaczone prognozy Y na okresy: tn-1, tn bazując na wartościach odpowiedniej/odpowiednich
+# zmiennych Xk z okresów: tn-1, tn,
+
+# prognoza tn-1
+nowe_dane <- data.frame(
+  x1 = c(10.69)
+)
+exp(predict(model_3, newdata = nowe_dane))
+# 10.63764
+
+# prognoza tn 
+nowe_dane <- data.frame(
+  x1 = c(18.35)
+)
+exp(predict(model_3, newdata = nowe_dane))
+# 17.61646
+
+# 3.c) ocenę jakości wyznaczonych prognoz.
+
+# 11 - wyznaczona prognoza 10.63764 
+# 18 - wyznaczona prognoza 17.61646 
+
+
+# wariancja resztowa 0.01999396
+# blad prognozy 
+sqrt(0.01999396*(1+(1/21)+(11*(11-((21+2)/2)))/(21*(21^2-1))))
+# 0.1446864
+
+# wzgledny blad prognozy 
+(0.1446864/10.63764)*100
+# 1.360136 % < 5% -> prognoza dopuszczalna, blad prognozy niski, prognoza jest bardzo dokladna
+# mamy do czynienia z bardzo dokladna prognoza 
+
+sqrt(0.01999396*(1+(1/21)+(18*(18-((21+2)/2)))/(21*(21^2-1))))
+# 0.1455995
+
+# wzgledny blad prognozy 
+(0.1455995/17.61646)*100
+# 0.8264969% < 5% -> prognoza dopuszczalna, blad prognozy niski, prognoza jest bardzo dokladna
+# mamy do czynienia z bardzo dokladna prognoza 
+
+
